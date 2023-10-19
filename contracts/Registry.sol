@@ -81,7 +81,7 @@ contract Registry {
 	function deleGateVote(
 		address forWallet,
 		address signer
-	) public verifiedByOwner(forWallet) {
+	) public verifiedByOwner(signer) {
 		// solhint-disable-next-line custom-errors
 		require(
 			msg.sender == register[forWallet].firDel ||
