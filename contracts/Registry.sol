@@ -12,7 +12,11 @@ contract Registry {
 		address fourDel
 	);
 	event WalletMapped(address indexed oldWallet, address indexed newWallet);
-	event Voted(address indexed oldWallet, address indexed newWallet, address indexed delegateVoter);
+	event Voted(
+		address indexed oldWallet,
+		address indexed newWallet,
+		address indexed delegateVoter
+	);
 
 	struct Registery {
 		address firDel;
@@ -21,7 +25,7 @@ contract Registry {
 		address fourDel;
 	}
 
-	struct Pair{
+	struct Pair {
 		address oldWallet;
 		address newWallet;
 	}
@@ -41,19 +45,31 @@ contract Registry {
 	function voteValidation(Pair memory pair) public view returns (bool) {
 		uint8 totalVote = 0;
 
-		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].firDel].newWallet == pair.newWallet) {
+		if (
+			delegateVoteCount[pair.oldWallet][register[pair.oldWallet].firDel]
+				.newWallet == pair.newWallet
+		) {
 			totalVote += 1;
 		}
 
-		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].secDel].newWallet == pair.newWallet) {
+		if (
+			delegateVoteCount[pair.oldWallet][register[pair.oldWallet].secDel]
+				.newWallet == pair.newWallet
+		) {
 			totalVote += 1;
 		}
 
-		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].thirDel].newWallet == pair.newWallet) {
+		if (
+			delegateVoteCount[pair.oldWallet][register[pair.oldWallet].thirDel]
+				.newWallet == pair.newWallet
+		) {
 			totalVote += 1;
 		}
 
-		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].fourDel].newWallet == pair.newWallet) {
+		if (
+			delegateVoteCount[pair.oldWallet][register[pair.oldWallet].fourDel]
+				.newWallet == pair.newWallet
+		) {
 			totalVote += 1;
 		}
 
@@ -83,10 +99,7 @@ contract Registry {
 		emit WalletMapped(pair.oldWallet, pair.newWallet);
 	}
 
-	function deleGateVote(
-		Pair memory pair,
-		address signer
-	) public {
+	function deleGateVote(Pair memory pair, address signer) public {
 		// solhint-disable-next-line custom-errors
 		require(
 			msg.sender == register[pair.oldWallet].firDel ||
@@ -98,7 +111,10 @@ contract Registry {
 		// solhint-disable-next-line custom-errors
 		require(msg.sender == signer, "Cant Vote for others");
 		// solhint-disable-next-line custom-errors
-		require(delegateVoteCount[pair.oldWallet][signer].newWallet == address(0), "Already voted");
+		require(
+			delegateVoteCount[pair.oldWallet][signer].newWallet == address(0),
+			"Already voted"
+		);
 		delegateVoteCount[pair.oldWallet][signer] = pair;
 		emit Voted(pair.oldWallet, pair.newWallet, signer);
 	}
