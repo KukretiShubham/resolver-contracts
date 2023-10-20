@@ -12,7 +12,7 @@ contract Registry {
 		address fourDel
 	);
 	event WalletMapped(address indexed oldWallet, address indexed newWallet);
-	event Voted(address indexed currWallet, address indexed delegateVoter);
+	event Voted(address indexed oldWallet, address indexed newWallet, address indexed delegateVoter);
 
 	struct Registery {
 		address firDel;
@@ -20,10 +20,16 @@ contract Registry {
 		address thirDel;
 		address fourDel;
 	}
+
+	struct Pair{
+		address oldWallet;
+		address newWallet;
+	}
+
 	mapping(address => Registery) public register;
 	mapping(address => address) public walletStatusOldToNew;
 	// client wallet to mapping(delegate wallet to bool)
-	mapping(address => mapping(address => bool)) public delegateVoteCount;
+	mapping(address => mapping(address => Pair)) public delegateVoteCount;
 
 	// signature verifier as a modifier yet to added
 	modifier verifiedByOwner(address currWallet) {
@@ -32,22 +38,22 @@ contract Registry {
 		_;
 	}
 
-	function voteValidation(address currWallet) public view returns (bool) {
+	function voteValidation(Pair memory pair) public view returns (bool) {
 		uint8 totalVote = 0;
 
-		if (delegateVoteCount[currWallet][register[currWallet].firDel]) {
+		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].firDel].newWallet == pair.newWallet) {
 			totalVote += 1;
 		}
 
-		if (delegateVoteCount[currWallet][register[currWallet].secDel]) {
+		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].secDel].newWallet == pair.newWallet) {
 			totalVote += 1;
 		}
 
-		if (delegateVoteCount[currWallet][register[currWallet].thirDel]) {
+		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].thirDel].newWallet == pair.newWallet) {
 			totalVote += 1;
 		}
 
-		if (delegateVoteCount[currWallet][register[currWallet].fourDel]) {
+		if (delegateVoteCount[pair.oldWallet][register[pair.oldWallet].fourDel].newWallet == pair.newWallet) {
 			totalVote += 1;
 		}
 
@@ -69,31 +75,32 @@ contract Registry {
 	}
 
 	function updateOldToNew(
-		address oldWallet,
-		address newWallet
-	) public verifiedByOwner(oldWallet) {
+		Pair memory pair
+	) public verifiedByOwner(pair.oldWallet) {
 		// solhint-disable-next-line custom-errors
-		require(voteValidation(oldWallet), "Min 3/4 votes required");
-		walletStatusOldToNew[oldWallet] = newWallet;
-		emit WalletMapped(oldWallet, newWallet);
+		require(voteValidation(pair), "Min 3/4 votes required");
+		walletStatusOldToNew[pair.oldWallet] = pair.newWallet;
+		emit WalletMapped(pair.oldWallet, pair.newWallet);
 	}
 
 	function deleGateVote(
-		address forWallet,
+		Pair memory pair,
 		address signer
-	) public verifiedByOwner(signer) {
+	) public {
 		// solhint-disable-next-line custom-errors
 		require(
-			msg.sender == register[forWallet].firDel ||
-				msg.sender == register[forWallet].secDel ||
-				msg.sender == register[forWallet].thirDel ||
-				msg.sender == register[forWallet].fourDel,
+			msg.sender == register[pair.oldWallet].firDel ||
+				msg.sender == register[pair.oldWallet].secDel ||
+				msg.sender == register[pair.oldWallet].thirDel ||
+				msg.sender == register[pair.oldWallet].fourDel,
 			"Not authorized"
 		);
 		// solhint-disable-next-line custom-errors
-		require(delegateVoteCount[forWallet][signer] == false, "Already voted");
-		delegateVoteCount[forWallet][signer] = true;
-		emit Voted(forWallet, signer);
+		require(msg.sender == signer, "Cant Vote for others");
+		// solhint-disable-next-line custom-errors
+		require(delegateVoteCount[pair.oldWallet][signer].newWallet == address(0), "Already voted");
+		delegateVoteCount[pair.oldWallet][signer] = pair;
+		emit Voted(pair.oldWallet, pair.newWallet, signer);
 	}
 
 	function resolver(address currWallet) public view returns (address) {
