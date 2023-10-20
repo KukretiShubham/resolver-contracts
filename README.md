@@ -1,14 +1,10 @@
 # template-repos-ts-sol
 
-
 # Testing Wallets for Wallet Resolver
 
-
-
-| Deployment | 
-| -------- | 
-| [Mumbai](https://mumbai.polygonscan.com/address/0x5B609a7D58eEC8c2348284cFEAa15F1b3ad2668a#code)     | 
-
+| Deployment                                                                                       |
+| ------------------------------------------------------------------------------------------------ |
+| [Mumbai](https://mumbai.polygonscan.com/address/0x5B609a7D58eEC8c2348284cFEAa15F1b3ad2668a#code) |
 
 ## Old wallet
 
@@ -24,10 +20,9 @@
 
 `0x391c990a006e34970DC5a449E14Aeb8183b1572a`
 
-## New Wallet 
+## New Wallet
 
 `0x1440676bc2990E0EA28dF90253F10435610da83D`
-
 
 # Installation
 
