@@ -283,4 +283,176 @@ describe('Registry', () => {
 			})
 		})
 	})
+	describe('resolver', () => {
+		it('resolves address', async () => {
+			// Get votes from 3 delegates minimum
+			const [owner, delg1, delg2, delg3, delg4, newWallet, newToNewWallet] =
+				await ethers.getSigners()
+			const registry = await ethers.getContractFactory('Registry')
+			const registryContract = await registry.deploy()
+			await registryContract.deployed()
+			await registryContract.createNewRegistry(owner.address, [
+				delg1.address,
+				delg2.address,
+				delg3.address,
+				delg4.address,
+			])
+			await expect(
+				await registryContract
+					.connect(delg1)
+					.deleGateVote([owner.address, newWallet.address], delg1.address)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(owner.address, newWallet.address, delg1.address)
+			expect(
+				await registryContract.voteValidation([
+					owner.address,
+					newWallet.address,
+				])
+			).to.equal(false)
+			await expect(
+				await registryContract
+					.connect(delg2)
+					.deleGateVote([owner.address, newWallet.address], delg2.address)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(owner.address, newWallet.address, delg2.address)
+			expect(
+				await registryContract.voteValidation([
+					owner.address,
+					newWallet.address,
+				])
+			).to.equal(false)
+			await expect(
+				await registryContract
+					.connect(delg3)
+					.deleGateVote([owner.address, newWallet.address], delg3.address)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(owner.address, newWallet.address, delg3.address)
+			expect(
+				await registryContract.voteValidation([
+					owner.address,
+					newWallet.address,
+				])
+			).to.equal(true)
+			await expect(
+				await registryContract
+					.connect(delg4)
+					.deleGateVote([owner.address, newWallet.address], delg4.address)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(owner.address, newWallet.address, delg4.address)
+			expect(
+				await registryContract.voteValidation([
+					owner.address,
+					newWallet.address,
+				])
+			).to.equal(true)
+
+			// Now update wallet
+			await expect(
+				await registryContract
+					.connect(owner)
+					.updateOldToNew([owner.address, newWallet.address])
+			)
+				.to.emit(registry, 'WalletMapped')
+				.withArgs(owner.address, newWallet.address)
+
+			// Now resolve
+			expect(await registryContract.resolver(owner.address)).to.equal(
+				newWallet.address
+			)
+
+			// Now update again for new wallet-------
+
+			await registryContract.connect(newWallet).createNewRegistry(newWallet.address, [
+				delg1.address,
+				delg2.address,
+				delg3.address,
+				delg4.address,
+			])
+			await expect(
+				await registryContract
+					.connect(delg1)
+					.deleGateVote(
+						[newWallet.address, newToNewWallet.address],
+						delg1.address
+					)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(newWallet.address, newToNewWallet.address, delg1.address)
+			expect(
+				await registryContract.voteValidation([
+					newWallet.address,
+					newToNewWallet.address,
+				])
+			).to.equal(false)
+			await expect(
+				await registryContract
+					.connect(delg2)
+					.deleGateVote(
+						[newWallet.address, newToNewWallet.address],
+						delg2.address
+					)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(newWallet.address, newToNewWallet.address, delg2.address)
+			expect(
+				await registryContract.voteValidation([
+					newWallet.address,
+					newToNewWallet.address,
+				])
+			).to.equal(false)
+			await expect(
+				await registryContract
+					.connect(delg3)
+					.deleGateVote(
+						[newWallet.address, newToNewWallet.address],
+						delg3.address
+					)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(newWallet.address, newToNewWallet.address, delg3.address)
+			expect(
+				await registryContract.voteValidation([
+					newWallet.address,
+					newToNewWallet.address,
+				])
+			).to.equal(true)
+			await expect(
+				await registryContract
+					.connect(delg4)
+					.deleGateVote(
+						[newWallet.address, newToNewWallet.address],
+						delg4.address
+					)
+			)
+				.to.emit(registry, 'Voted')
+				.withArgs(newWallet.address, newToNewWallet.address, delg4.address)
+			expect(
+				await registryContract.voteValidation([
+					newWallet.address,
+					newToNewWallet.address,
+				])
+			).to.equal(true)
+
+			// Now update wallet
+			await expect(
+				await registryContract
+					.connect(newWallet)
+					.updateOldToNew([newWallet.address, newToNewWallet.address])
+			)
+				.to.emit(registry, 'WalletMapped')
+				.withArgs(newWallet.address, newToNewWallet.address)
+
+			// Now resolve
+			expect(await registryContract.resolver(newWallet.address)).to.equal(
+				newToNewWallet.address
+			)
+			expect(await registryContract.resolver(owner.address)).to.equal(
+				newToNewWallet.address
+			)
+		})
+	})
 })
