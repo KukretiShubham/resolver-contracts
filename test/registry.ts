@@ -366,12 +366,14 @@ describe('Registry', () => {
 
 			// Now update again for new wallet-------
 
-			await registryContract.connect(newWallet).createNewRegistry(newWallet.address, [
-				delg1.address,
-				delg2.address,
-				delg3.address,
-				delg4.address,
-			])
+			await registryContract
+				.connect(newWallet)
+				.createNewRegistry(newWallet.address, [
+					delg1.address,
+					delg2.address,
+					delg3.address,
+					delg4.address,
+				])
 			await expect(
 				await registryContract
 					.connect(delg1)
