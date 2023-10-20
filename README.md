@@ -1,6 +1,5 @@
 # template-repos-ts-sol
 
-
 # Testing Wallets for Wallet Resolver
 
 ## Old wallet
@@ -17,7 +16,7 @@
 
 `0x391c990a006e34970DC5a449E14Aeb8183b1572a`
 
-## New Wallet 
+## New Wallet
 
 `0x1440676bc2990E0EA28dF90253F10435610da83D`
 
